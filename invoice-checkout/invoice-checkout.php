@@ -34,11 +34,11 @@ if ( in_array( 'woocommerce/woocommerce.php', get_option('active_plugins'))) {
 
 function ic_get_keys_labels( $all = true ){
 	$data = [
-			'timologio' => __('Τιμολόγιο', TEXT_DOMAIN),
-			'vat'           => __('ΑΦΜ', TEXT_DOMAIN),
+			'timologio' => __('Έκδοση Τιμολογίου', TEXT_DOMAIN),
+			'vat'           => __('ΑΦΜ Επιχείρησης', TEXT_DOMAIN),
 			'doy'           => __('ΔΟΥ', TEXT_DOMAIN),
 			'epag' 			=> __('Επάγγελμα', TEXT_DOMAIN),
-			'adrr'         => __('Διεύθυνση', TEXT_DOMAIN),
+			'addr'         => __('Διεύθυνση Επιχείρησης', TEXT_DOMAIN),
 	];
 	if( ! $all )
 			unset($data['timologio']);
@@ -59,7 +59,7 @@ function custom_override_checkout_fields( $fields ) {
 	
 	$fields['billing']['billing_timologio'] = array(
 		'label'       => $labels['timologio'],
-		'placeholder' => __('Έκδοση Τιμολογίου', 'placeholder', 'woocommerce'),
+		'placeholder' => $labels['timologio'], 'placeholder', 'woocommerce',
 		'priority'	=> 111,
 		'class'       => array( 'form-row-wide', 'timologio-select' ),
 		'required'    => false,
@@ -74,28 +74,28 @@ function custom_override_checkout_fields( $fields ) {
 
     $fields['billing']['billing_vat'] = array(
         'label'     => $labels['vat'],
-		'placeholder'   => __('ΑΦΜ Επιχείρησης', 'placeholder', 'woocommerce'),
+		'placeholder'   => $labels['vat'], 'placeholder', 'woocommerce',
 		'class'     => array('form-row-wide', 'timologio-hide', 'validate-required'),
 		'clear'     => true
 		 );
 	
 	$fields['billing']['billing_doy'] = array(
         'label'     => $labels['doy'],
-		'placeholder'   => __('ΔΟΥ', 'placeholder', 'woocommerce'),
+		'placeholder'   => $labels['doy'], 'placeholder', 'woocommerce',
 		'class'     => array('form-row-wide', 'timologio-hide', 'validate-required'),
 		'clear'     => true
 		 );
 	
 	$fields['billing']['billing_epag'] = array(
 		'label'     => $labels['epag'],
-		'placeholder'   => __('Επάγγελμα', 'placeholder', 'woocommerce'),
+		'placeholder'   => $labels['epag'], 'placeholder', 'woocommerce',
 		'class'     => array('form-row-wide', 'timologio-hide', 'validate-required'),
 		'clear'     => true
 	);
 	
-	$fields['billing']['billing_adrr'] = array(
-		'label'     => $labels['adrr'],
-		'placeholder'   => __('Διεύθυνση Επιχείρησης', 'placeholder', 'woocommerce'),
+	$fields['billing']['billing_addr'] = array(
+		'label'     => $labels['addr'],
+		'placeholder'   => $labels['addr'], 'placeholder', 'woocommerce',
 		'class'     => array('form-row-wide', 'timologio-hide', 'validate-required'),
 		'clear'     => true
 	);  
@@ -106,7 +106,7 @@ function custom_override_checkout_fields( $fields ) {
 
 
 function ic_add_woocommerce_admin_billing_fields($billing_fields) {
-	// Loop through the (complete) keys/labels array
+	
 	foreach ( ic_get_keys_labels() as $key => $label ) {
 		$billing_fields[$key]['label'] = $label;
 	}
@@ -142,8 +142,8 @@ function spiros_save_extra_checkout_fields( $order_id, $posted ){
 	if( isset( $posted['billing_epag'] ) ) {
 		update_post_meta( $order_id, '_billing_epag', sanitize_text_field( $posted['billing_epag'] ) );
 	}
-	if( isset( $posted['billing_adrr'] ) ) {
-		update_post_meta( $order_id, '_billing_adrr', sanitize_text_field( $posted['billing_adrr'] ) );
+	if( isset( $posted['billing_addr'] ) ) {
+		update_post_meta( $order_id, '_billing_addr', sanitize_text_field( $posted['billing_addr'] ) );
 	}
 
 }
@@ -161,7 +161,7 @@ function spiros_email_order_meta_fields( $fields, $sent_to_admin, $order ) {
 
 	$fields['timologio_vat'] = array(
 
-		'label' => __( 'ΑΦΜ' ),
+		'label' => __( 'ΑΦΜ Επιχείρησης' ),
 		
 		'value' => get_post_meta( $order->id, '_billing_vat', true ),
 		
@@ -180,33 +180,36 @@ function spiros_email_order_meta_fields( $fields, $sent_to_admin, $order ) {
 		'value' => get_post_meta( $order->id, '_billing_epag', true ),
 		
 		);
-	$fields['timologio_adrr'] = array(
+	$fields['timologio_addr'] = array(
 
-		'label' => __( 'Διεύθηνση Επιχείρησης' ),
+		'label' => __( 'Διεύθυνση Επιχείρησης' ),
 		
-		'value' => get_post_meta( $order->id, '_billing_adrr', true ),
+		'value' => get_post_meta( $order->id, '_billing_addr', true ),
 		
 		);
 }
 
 
-function spiros_show_email_order_meta( $order, $sent_to_admin, $plain_text ) {
+function spiros_show_email_order_meta( $order, $sent_to_admin, $plain_text) {
 
-	echo '<h3>Τιμολόγιο</h3>';
-	echo '<table style="border:1px solid #000">';
-	echo '<tr>';
-	echo '<td><strong>ΑΦΜ-Επιχείρησης :</strong></td><td>' . get_post_meta( $order->id, '_billing_vat', true ) .'</td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<td><strong> ΔΟΥ:</strong></td><td>' . get_post_meta( $order->id, '_billing_doy', true ) .'</td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<td><strong> Επάγγελμα :</strong></td><td>' . get_post_meta( $order->id, '_billing_epag', true ) .'</td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<td><strong> Διεύθηνση-Επιχείρησης : </strong></td><td>' . get_post_meta( $order->id, '_billing_adrr', true ) .'</td>';
-	echo '</tr>';
-	echo '</table>';
+
+	$emailPrint .= '<h3>' . __('Τιμολόγιο') . '</h3>';
+	$emailPrint .= '<table style="border:1px solid #000">';
+	$emailPrint .= '<tr>';
+	$emailPrint .= '<td><strong> ' . __('ΑΦΜ-Επιχείρησης:') . ' </strong></td><td>' . get_post_meta( $order->id, '_billing_vat', true ) .'</td>';
+	$emailPrint .= '</tr>';
+	$emailPrint .= '<tr>';
+	$emailPrint .= '<td><strong>' . __('ΔΟΥ:') . '</strong></td><td>' . get_post_meta( $order->id, '_billing_doy', true ) .'</td>';
+	$emailPrint .= '</tr>';
+	$emailPrint .= '<tr>';
+	$emailPrint .= '<td><strong> ' . __('Επάγγελμα:') . ' </strong></td><td>' . get_post_meta( $order->id, '_billing_epag', true ) .'</td>';
+	$emailPrint .= '</tr>';
+	$emailPrint .= '<tr>';
+	$emailPrint .= '<td><strong> ' . __('Διεύθηνση-Επιχείρησης:') . '</strong></td><td>' . get_post_meta( $order->id, '_billing_addr', true ) .'</td>';
+	$emailPrint .= '</tr>';
+	$emailPrint .= '</table>';
+
+	echo $emailPrint;
 }
 
 }
